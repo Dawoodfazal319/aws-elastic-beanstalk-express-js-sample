@@ -2,6 +2,7 @@ pipeline {
     agent {
         docker {
             image 'node:16'
+            args '-v $HOME/.npm:/root/.npm'
         }
     }
     stages {
@@ -20,23 +21,17 @@ pipeline {
                 sh 'npm test'
             }
         }
-        stage('Deploy') {
+        stage('Security Scan') {
             steps {
-                echo 'Deploying the application...'
-                // Add your deployment steps or scripts here
+                sh 'npm install -g snyk'
+                sh 'snyk test'
             }
         }
     }
     post {
         always {
-            archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
-            junit '**/test-results/*.xml'
-        }
-        success {
-            echo 'Pipeline executed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed!'
+            archiveArtifacts artifacts: '**/build/*', allowEmptyArchive: true
+            junit 'test-results.xml'
         }
     }
 }
