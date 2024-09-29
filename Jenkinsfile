@@ -11,14 +11,14 @@ pipeline {
                 sh 'npm install'
             }
         }
-        stage('Build') {
+        stage('Start') {  // Updated to use the start script
             steps {
-                sh 'npm run build'
+                sh 'npm start'
             }
         }
         stage('Test') {
             steps {
-                sh 'npm test'
+                sh 'npm test'  // Add your test script here if necessary
             }
         }
     }
