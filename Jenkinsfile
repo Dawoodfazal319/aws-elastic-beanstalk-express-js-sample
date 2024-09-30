@@ -21,15 +21,15 @@ pipeline {
             }
         }
 
-        // Step 3: Run Security Scan (Snyk Authentication and Scan)
         stage('Security Scan') {
-            steps {
-                withCredentials([string(credentialsId: 'snyk-api-token', variable: 'SNYK_TOKEN')]) {
-                    sh 'snyk auth $SNYK_TOKEN'  // Authenticate Snyk
-                    sh 'snyk test || echo "Vulnerabilities detected, please fix"'  // Run Snyk test
-                }
-            }
+    steps {
+        withCredentials([string(credentialsId: 'snyk-api-token', variable: 'SNYK_TOKEN')]) {
+            sh 'snyk auth $SNYK_TOKEN'  // Authenticate Snyk using the API token
+            sh 'snyk test || echo "Vulnerabilities detected, please fix"'  // Run Snyk test
         }
+    }
+}
+
 
         // Step 4: Archive Artifacts
         stage('Archive Artifacts') {
