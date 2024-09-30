@@ -23,12 +23,17 @@ pipeline {
 
         stage('Security Scan') {
     steps {
+        // Install Snyk CLI
+        sh 'npm install -g snyk'
+        
+        // Authenticate and run the Snyk test
         withCredentials([string(credentialsId: 'snyk-api-token', variable: 'SNYK_TOKEN')]) {
-            sh 'snyk auth $SNYK_TOKEN'  // Authenticate Snyk using the API token
+            sh 'snyk auth $SNYK_TOKEN'  // Authenticate with Snyk using the API token
             sh 'snyk test || echo "Vulnerabilities detected, please fix"'  // Run Snyk test
         }
     }
 }
+
 
 
         // Step 4: Archive Artifacts
