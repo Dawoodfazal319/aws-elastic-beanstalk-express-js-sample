@@ -13,38 +13,37 @@ pipeline {
             }
         }
 
-        // Step 2: Build the Project
+        // Optional: Step 2: Build the Project (remove if not needed)
+        // If you don't need a build step, remove this stage.
         stage('Build') {
             steps {
-                // You can replace this with your actual build step
                 sh 'npm run build || echo "No build script defined"'
             }
         }
 
-        // Step 3: Run Security Scan (using Snyk)
+        // Step 3: Run Security Scan (Snyk Authentication and Scan)
         stage('Security Scan') {
             steps {
-                // Install and run Snyk for security testing
-                sh 'npm install -g snyk'
-                sh 'snyk test || echo "Vulnerabilities detected, please fix"'
+                withCredentials([string(credentialsId: 'snyk-api-token', variable: 'SNYK_TOKEN')]) {
+                    sh 'snyk auth $SNYK_TOKEN'  // Authenticate Snyk
+                    sh 'snyk test || echo "Vulnerabilities detected, please fix"'  // Run Snyk test
+                }
             }
         }
 
         // Step 4: Archive Artifacts
         stage('Archive Artifacts') {
             steps {
-                // Archive important build outputs or other artifacts
-                archiveArtifacts artifacts: '**/build/**/*', allowEmptyArchive: true
+                archiveArtifacts artifacts: '**/*', allowEmptyArchive: true  // Archive all files
             }
         }
     }
 
     // Post-build actions (for logging and notifications)
     post {
-        // Always store logs and artifacts
+        // Always store logs and artifacts, modify paths to match your project structure
         always {
-            // Save logs and any other necessary files
-            archiveArtifacts artifacts: '**/logs/**/*', allowEmptyArchive: true
+            archiveArtifacts artifacts: '**/logs/**/*', allowEmptyArchive: true  // Logs
         }
         // Notify on build failure
         failure {
