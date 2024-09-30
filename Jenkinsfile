@@ -6,57 +6,50 @@ pipeline {
         }
     }
     stages {
-        // Step 1: Install Dependencies
+        // Install dependencies stage
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
             }
         }
 
-        // Optional: Step 2: Build the Project (remove if not needed)
-        // If you don't need a build step, remove this stage.
-        stage('Build') {
+        // Start the application
+        stage('Start Application') {
             steps {
-                sh 'npm run build || echo "No build script defined"'
+                sh 'npm start'
             }
         }
 
+        // Test the application
+        stage('Test') {
+            steps {
+                sh 'npm test || echo "No test script defined"'
+            }
+        }
+
+        // Security scan using Snyk
         stage('Security Scan') {
-    steps {
-        // Install Snyk CLI
-        sh 'npm install -g snyk'
-        
-        // Authenticate and run the Snyk test
-        withCredentials([string(credentialsId: 'snyk-api-token', variable: 'SNYK_TOKEN')]) {
-            sh 'snyk auth $SNYK_TOKEN'  // Authenticate with Snyk using the API token
-            sh 'snyk test || echo "Vulnerabilities detected, please fix"'  // Run Snyk test
-        }
-    }
-}
-
-
-
-        // Step 4: Archive Artifacts
-        stage('Archive Artifacts') {
             steps {
-                archiveArtifacts artifacts: '**/*', allowEmptyArchive: true  // Archive all files
+                sh 'npm install -g snyk'
+                withCredentials([string(credentialsId: 'snyk-api-token', variable: 'SNYK_TOKEN')]) {
+                    sh 'snyk auth $SNYK_TOKEN'
+                    sh 'snyk test || echo "Vulnerabilities detected, please fix"'
+                }
             }
         }
     }
 
-    // Post-build actions (for logging and notifications)
+    // Post build actions
     post {
-        // Always store logs and artifacts, modify paths to match your project structure
         always {
-            archiveArtifacts artifacts: '**/logs/**/*', allowEmptyArchive: true  // Logs
+            archiveArtifacts artifacts: '**/logs/**/*', allowEmptyArchive: true
+            echo 'Build logs archived'
         }
-        // Notify on build failure
-        failure {
-            echo 'Build failed! Please check the logs and fix issues.'
-        }
-        // Notify on build success
         success {
             echo 'Build succeeded!'
+        }
+        failure {
+            echo 'Build failed!'
         }
     }
 }
